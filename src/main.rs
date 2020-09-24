@@ -15,6 +15,8 @@ struct Opts {
 
 #[derive(Clap)]
 enum SubCommand {
+    /// Record changes to the repository
+    Commit,
     /// Create an empty RGit repository
     Init,
 }
@@ -23,7 +25,15 @@ enum SubCommand {
 fn main() {
     let opts: Opts = Opts::parse();
 
+    match opts.verbose {
+        0 => (),
+        1 => println!("Verbose messaging level one enabled."),
+        2 => println!("Verbose messaging level two enabled."),
+        _ => println!("Verbose messaging level three enabled."),
+    }
+
     match opts.subcmd {
-        SubCommand::Init => println!("Hello world!"),
+        SubCommand::Commit => println!("Hello commit!"),
+        SubCommand::Init => println!("Hello init!"),
     }
 }
