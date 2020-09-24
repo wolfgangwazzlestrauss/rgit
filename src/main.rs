@@ -1,12 +1,15 @@
 /// Simple Git implementation with Rust.
-
 use anyhow::Result;
 use clap::Clap;
 use rgit::data;
+use std::path::Path;
 
 /// Basic implmentation of Git.
 #[derive(Clap)]
-#[clap(version = "0.0.1", author = "Macklan Weinstein <wolfgangwazzlestrauss@gmail.com>")]
+#[clap(
+    version = "0.0.1",
+    author = "Macklan Weinstein <wolfgangwazzlestrauss@gmail.com>"
+)]
 struct Opts {
     /// Increase the verbosity of messages
     #[clap(short, long, parse(from_occurrences))]
@@ -23,7 +26,6 @@ enum SubCommand {
     Init,
 }
 
-
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
 
@@ -34,9 +36,11 @@ fn main() -> Result<()> {
         _ => println!("Verbose messaging level three enabled."),
     }
 
+    let current_dir = Path::new(".");
+
     match opts.subcmd {
         SubCommand::Commit => println!("Hello commit!"),
-        SubCommand::Init => data::init()?,
+        SubCommand::Init => data::init(current_dir)?,
     }
 
     Ok(())
