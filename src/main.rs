@@ -37,9 +37,10 @@ fn main() -> Result<()> {
     }
 
     let current_dir = Path::new(".");
+    let test_file = current_dir.join("Makefile.toml");
 
     match opts.subcmd {
-        SubCommand::Commit => println!("Hello commit!"),
+        SubCommand::Commit => data::hash_file(current_dir, &test_file)?,
         SubCommand::Init => data::init(current_dir)?,
     }
 
