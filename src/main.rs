@@ -1,6 +1,8 @@
 /// Simple Git implementation with Rust.
 
+use anyhow::Result;
 use clap::Clap;
+use rgit::data;
 
 /// Basic implmentation of Git.
 #[derive(Clap)]
@@ -22,7 +24,7 @@ enum SubCommand {
 }
 
 
-fn main() {
+fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
 
     match opts.verbose {
@@ -34,6 +36,8 @@ fn main() {
 
     match opts.subcmd {
         SubCommand::Commit => println!("Hello commit!"),
-        SubCommand::Init => println!("Hello init!"),
+        SubCommand::Init => data::init()?,
     }
+
+    Ok(())
 }
