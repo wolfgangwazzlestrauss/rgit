@@ -4,6 +4,18 @@ use clap::Clap;
 use rgit::data;
 use std::path::Path;
 
+#[derive(Clap)]
+struct CatFile {
+    /// Name of object to show
+    object: String,
+}
+
+#[derive(Clap)]
+struct HashObject {
+    /// Name of file to hash
+    file: String,
+}
+
 /// Basic implmentation of Git.
 #[derive(Clap)]
 #[clap(
@@ -20,8 +32,12 @@ struct Opts {
 
 #[derive(Clap)]
 enum SubCommand {
+    /// Provide content for repository objects
+    CatFile(CatFile),
     /// Record changes to the repository
     Commit,
+    /// Compute object ID value with contents of named file
+    HashObject(HashObject),
     /// Create an empty RGit repository
     Init,
 }
@@ -37,10 +53,13 @@ fn main() -> Result<()> {
     }
 
     let current_dir = Path::new(".");
-    let test_file = current_dir.join("Makefile.toml");
 
     match opts.subcmd {
-        SubCommand::Commit => data::hash_file(current_dir, &test_file)?,
+        SubCommand::CatFile(hash) => data::cat_file(current_dir, &hash.object)?,
+        SubCommand::Commit => std::unimplemented!(),
+        SubCommand::HashObject(file_path) => {
+            data::hash_object(current_dir, &Path::new(&file_path.file))?
+        }
         SubCommand::Init => data::init(current_dir)?,
     }
 
