@@ -2,7 +2,7 @@
 use anyhow::Result;
 use clap::Clap;
 use rgit::data;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Clap)]
 struct CatFile {
@@ -13,7 +13,7 @@ struct CatFile {
 #[derive(Clap)]
 struct HashObject {
     /// Name of file to hash
-    file: String,
+    file: PathBuf,
 }
 
 /// Basic implmentation of Git.
@@ -55,11 +55,9 @@ fn main() -> Result<()> {
     let current_dir = Path::new(".");
 
     match opts.subcmd {
-        SubCommand::CatFile(hash) => data::cat_file(current_dir, &hash.object)?,
+        SubCommand::CatFile(cat_file) => data::cat_file(current_dir, &cat_file.object)?,
         SubCommand::Commit => std::unimplemented!(),
-        SubCommand::HashObject(file_path) => {
-            data::hash_object(current_dir, &Path::new(&file_path.file))?
-        }
+        SubCommand::HashObject(hash_object) => data::hash_object(current_dir, &&hash_object.file)?,
         SubCommand::Init => data::init(current_dir)?,
     }
 
