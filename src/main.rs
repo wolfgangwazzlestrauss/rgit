@@ -55,9 +55,15 @@ fn main() -> Result<()> {
     let current_dir = Path::new(".");
 
     match opts.subcmd {
-        SubCommand::CatFile(cat_file) => data::cat_file(current_dir, &cat_file.object)?,
+        SubCommand::CatFile(cat_file) => {
+            let text = data::cat_file(current_dir, &cat_file.object)?;
+            println!("{}", text);
+        }
         SubCommand::Commit => std::unimplemented!(),
-        SubCommand::HashObject(hash_object) => data::hash_object(current_dir, &&hash_object.file)?,
+        SubCommand::HashObject(hash_object) => {
+            let hash = data::hash_object(current_dir, &hash_object.file)?;
+            println!("{}", hash);
+        }
         SubCommand::Init => data::init(current_dir)?,
     }
 

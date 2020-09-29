@@ -3,40 +3,27 @@ use sha3::{Digest, Sha3_256};
 use std::fs;
 use std::path::Path;
 
-pub fn cat_file(repo: &Path, hash: &str) -> Result<()> {
-    let object = get_object(repo, hash)?;
-    println!("{}", object);
-
-    Ok(())
-}
-
-fn get_object(repo: &Path, hash: &str) -> Result<String> {
+/// Retrieve file text from hashed objects collection.
+pub fn cat_file(repo: &Path, hash: &str) -> Result<String> {
     let path = repo.join(format!(".rgit/objects/{}", hash));
     let text = fs::read_to_string(path)?;
 
     Ok(text)
 }
 
-/// Save file to version control and print generated hash.
-pub fn hash_object(repo: &Path, file: &Path) -> Result<()> {
-    let text = fs::read(file)?;
+/// Save file to version control objects directory.
+pub fn hash_object(repo: &Path, file: &Path) -> Result<String> {
+    let file_path = repo.join(file);
+    let data = fs::read(file_path)?;
 
-    let object_id = hash_text(repo, &text)?;
-    println!("{}", object_id);
-
-    Ok(())
-}
-
-/// Save text to version control objects directory.
-fn hash_text(repo: &Path, data: impl AsRef<[u8]>) -> Result<String> {
     let mut hasher = Sha3_256::new();
     hasher.update(&data);
-    let obj_id = format!("{:x}", hasher.finalize());
+    let hash = format!("{:x}", hasher.finalize());
 
-    let path = repo.join(format!(".rgit/objects/{}", obj_id));
-    fs::write(path, data)?;
+    let object_path = repo.join(format!(".rgit/objects/{}", hash));
+    fs::write(object_path, data)?;
 
-    Ok(obj_id)
+    Ok(hash)
 }
 
 /// Initialize version control directory.
@@ -85,5 +72,20 @@ mod tests {
         let object_path = repo.join(".rgit/objects").join(object_id);
 
         assert!(object_path.exists());
+    }
+
+    /// Original text and hashed object are the same.
+    #[test]
+    fn hash_invariant() {
+        let repo = repository().unwrap();
+
+        let expected = "I am fake text for the hash invariant test.";
+        let file_path = Path::new("hash_invariant.txt");
+        fs::write(repo.join(file_path), expected).unwrap();
+
+        let hash = hash_object(&repo, file_path).unwrap();
+        let actual = cat_file(&repo, &hash).unwrap();
+
+        assert_eq!(actual, expected);
     }
 }
