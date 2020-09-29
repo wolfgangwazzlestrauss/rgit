@@ -25,3 +25,9 @@ args = ["fmt", "--", "--emit=files"]
 command = "cargo"
 args = ["test"]
 dependencies = ["clean"]
+
+# Only run on x86_64 Linux.
+[tasks.test-coverage]
+command = "cargo"
+args = ["tarpaulin", "-v"]
+dependencies = ["clean"]
