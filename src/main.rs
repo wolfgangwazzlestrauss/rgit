@@ -2,7 +2,9 @@
 use anyhow::Result;
 use clap::Clap;
 use rgit::data;
+use rgit::data::ObjectType;
 use std::path::{Path, PathBuf};
+use std::str;
 
 #[derive(Clap)]
 struct CatFile {
@@ -27,7 +29,7 @@ struct Opts {
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
     #[clap(subcommand)]
-    subcmd: SubCommand,
+    sub_command: SubCommand,
 }
 
 #[derive(Clap)]
@@ -54,14 +56,14 @@ fn main() -> Result<()> {
 
     let current_dir = Path::new(".");
 
-    match opts.subcmd {
+    match opts.sub_command {
         SubCommand::CatFile(cat_file) => {
-            let text = data::cat_file(current_dir, &cat_file.object)?;
-            println!("{}", text);
+            let bytes = data::cat_file(current_dir, &cat_file.object)?;
+            println!("{}", str::from_utf8(&bytes)?);
         }
         SubCommand::Commit => std::unimplemented!(),
         SubCommand::HashObject(hash_object) => {
-            let hash = data::hash_object(current_dir, &hash_object.file)?;
+            let hash = data::hash_object(current_dir, &hash_object.file, ObjectType::Blob)?;
             println!("{}", hash);
         }
         SubCommand::Init => data::init(current_dir)?,
