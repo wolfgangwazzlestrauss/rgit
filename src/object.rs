@@ -44,56 +44,58 @@ pub fn hash_object(repo: &Path, file: &Path, object_type: &ObjectType) -> Result
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use proptest::prelude::{proptest, prop_assert_eq};
+    use rstest::*;
     use std::path::PathBuf;
     use std::str;
+    use super::*;
 
     /// Create a repository and initialize it for version control.
-    fn repository() -> Result<PathBuf> {
-        let repo = tempfile::tempdir()?.path().to_owned();
-        crate::init(&repo)?;
+    #[fixture]
+    fn repository() -> PathBuf {
+        let repo = tempfile::tempdir().unwrap().path().to_owned();
+        crate::init(&repo).unwrap();
 
         let text = "I am some mock text for a file.";
         let file_path = repo.join("code.txt");
-        fs::write(file_path, text)?;
+        fs::write(file_path, text).unwrap();
 
-        Ok(repo)
+        repo
     }
 
     /// Internal objects directory is created upon initialization.
-    #[test]
-    fn init_objects_directory() {
-        let repo = repository().unwrap();
-
-        let obj_dir = repo.join(".rgit/objects");
+    #[rstest]
+    fn init_objects_directory(repository: PathBuf) {
+        let obj_dir = repository.join(".rgit/objects");
         assert!(obj_dir.exists());
     }
 
     /// File is saved at location in version control directory based on known SHA-3 hash.
-    #[test]
-    fn hash_file_known_id() {
-        let repo = repository().unwrap();
-        hash_object(&repo, &repo.join("code.txt"), &ObjectType::Blob).unwrap();
+    #[rstest]
+    fn hash_file_known_id(repository: PathBuf) {
+        hash_object(&repository, &repository.join("code.txt"), &ObjectType::Blob).unwrap();
 
         let object_id = "7986d944ad3819fbd5431df6704a6aa1a24291b4f19b158b4ba127161ceacc24";
-        let object_path = repo.join(".rgit/objects").join(object_id);
+        let object_path = repository.join(".rgit/objects").join(object_id);
 
         assert!(object_path.exists());
     }
 
-    /// Original text and hashed object are the same.
-    #[test]
-    fn hash_invariant() {
-        let repo = repository().unwrap();
+    proptest! {
 
-        let expected = "I am fake text for the hash invariant test.";
-        let file_path = Path::new("hash_invariant.txt");
-        fs::write(repo.join(file_path), expected).unwrap();
+        /// Original text and hashed object are the same.
+        #[test]
+        fn hash_invariant(expected in "\\PC*") {
+            let repo = repository();
 
-        let hash = hash_object(&repo, file_path, &ObjectType::Blob).unwrap();
-        let bytes = cat_file(&repo, &hash).unwrap();
+            let file_path = Path::new("hash_invariant.txt");
+            fs::write(repo.join(file_path), &expected).unwrap();
 
-        let actual = str::from_utf8(&bytes).unwrap();
-        assert_eq!(actual, expected);
+            let hash = hash_object(&repo, file_path, &ObjectType::Blob).unwrap();
+            let bytes = cat_file(&repo, &hash).unwrap();
+
+            let actual = str::from_utf8(&bytes).unwrap();
+            prop_assert_eq!(actual, expected);
+        }
     }
 }
