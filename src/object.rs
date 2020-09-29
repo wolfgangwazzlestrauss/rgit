@@ -8,7 +8,6 @@ pub enum ObjectType {
 }
 
 impl ObjectType {
-
     /// Convert object type to associated string value.
     fn value(&self) -> &[u8] {
         match *self {
@@ -29,7 +28,7 @@ pub fn cat_file(repo: &Path, hash: &str) -> Result<Vec<u8>> {
 }
 
 /// Save file to version control objects directory.
-pub fn hash_object(repo: &Path, file: &Path, object_type: ObjectType) -> Result<String> {
+pub fn hash_object(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<String> {
     let file_path = repo.join(file);
     let data = [object_type.value(), &fs::read(file_path)?].join(&0u8);
 
@@ -74,7 +73,7 @@ mod tests {
     #[test]
     fn hash_file_known_id() {
         let repo = repository().unwrap();
-        hash_object(&repo, &repo.join("code.txt"), ObjectType::Blob).unwrap();
+        hash_object(&repo, &repo.join("code.txt"), &ObjectType::Blob).unwrap();
 
         let object_id = "7986d944ad3819fbd5431df6704a6aa1a24291b4f19b158b4ba127161ceacc24";
         let object_path = repo.join(".rgit/objects").join(object_id);
@@ -91,7 +90,7 @@ mod tests {
         let file_path = Path::new("hash_invariant.txt");
         fs::write(repo.join(file_path), expected).unwrap();
 
-        let hash = hash_object(&repo, file_path, ObjectType::Blob).unwrap();
+        let hash = hash_object(&repo, file_path, &ObjectType::Blob).unwrap();
         let bytes = cat_file(&repo, &hash).unwrap();
 
         let actual = str::from_utf8(&bytes).unwrap();
