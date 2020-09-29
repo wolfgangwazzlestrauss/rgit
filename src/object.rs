@@ -43,16 +43,6 @@ pub fn hash_object(repo: &Path, file: &Path, object_type: ObjectType) -> Result<
     Ok(hash)
 }
 
-/// Initialize version control directory.
-pub fn init(repo: &Path) -> Result<()> {
-    let vc_dir = repo.join(".rgit");
-    let obj_dir = vc_dir.join("objects");
-
-    fs::create_dir_all(obj_dir)?;
-
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -62,7 +52,7 @@ mod tests {
     /// Create a repository and initialize it for version control.
     fn repository() -> Result<PathBuf> {
         let repo = tempfile::tempdir()?.path().to_owned();
-        init(&repo)?;
+        crate::init(&repo)?;
 
         let text = "I am some mock text for a file.";
         let file_path = repo.join("code.txt");
@@ -84,7 +74,7 @@ mod tests {
     #[test]
     fn hash_file_known_id() {
         let repo = repository().unwrap();
-        let object_id = hash_object(&repo, &repo.join("code.txt"), ObjectType::Blob).unwrap();
+        hash_object(&repo, &repo.join("code.txt"), ObjectType::Blob).unwrap();
 
         let object_id = "7986d944ad3819fbd5431df6704a6aa1a24291b4f19b158b4ba127161ceacc24";
         let object_path = repo.join(".rgit/objects").join(object_id);
