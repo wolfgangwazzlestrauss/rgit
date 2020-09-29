@@ -1,8 +1,8 @@
 /// Simple Git implementation with Rust.
 use anyhow::Result;
 use clap::Clap;
-use rgit::data;
-use rgit::data::ObjectType;
+use rgit::object;
+use rgit::object::ObjectType;
 use std::path::{Path, PathBuf};
 use std::str;
 
@@ -58,15 +58,15 @@ fn main() -> Result<()> {
 
     match opts.sub_command {
         SubCommand::CatFile(cat_file) => {
-            let bytes = data::cat_file(current_dir, &cat_file.object)?;
+            let bytes = object::cat_file(current_dir, &cat_file.object)?;
             println!("{}", str::from_utf8(&bytes)?);
         }
         SubCommand::Commit => std::unimplemented!(),
         SubCommand::HashObject(hash_object) => {
-            let hash = data::hash_object(current_dir, &hash_object.file, ObjectType::Blob)?;
+            let hash = object::hash_object(current_dir, &hash_object.file, ObjectType::Blob)?;
             println!("{}", hash);
         }
-        SubCommand::Init => data::init(current_dir)?,
+        SubCommand::Init => rgit::init(current_dir)?,
     }
 
     Ok(())
