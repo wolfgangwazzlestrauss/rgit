@@ -3,6 +3,7 @@ use anyhow::Result;
 use clap::Clap;
 use rgit::object;
 use rgit::object::ObjectType;
+use rgit::tree;
 use std::path::{Path, PathBuf};
 use std::str;
 
@@ -16,6 +17,12 @@ struct CatFile {
 struct HashObject {
     /// Name of file to hash
     file: PathBuf,
+}
+
+#[derive(Clap)]
+struct WriteTree {
+    /// Name of folder with contents to hash
+    folder: PathBuf,
 }
 
 /// Basic implmentation of Git.
@@ -42,6 +49,8 @@ enum SubCommand {
     HashObject(HashObject),
     /// Create an empty RGit repository
     Init,
+    /// fdsl
+    WriteTree(WriteTree),
 }
 
 fn main() -> Result<()> {
@@ -63,11 +72,14 @@ fn main() -> Result<()> {
         }
         SubCommand::Commit => std::unimplemented!(),
         SubCommand::HashObject(hash_object) => {
-            let hash = object::hash_object(current_dir, &hash_object.file, ObjectType::Blob)?;
+            let hash = object::hash_object(current_dir, &hash_object.file, &ObjectType::Blob)?;
             println!("{}", hash);
         }
         SubCommand::Init => rgit::init(current_dir)?,
-    }
+        SubCommand::WriteTree(write_tree) => {
+            tree::write_tree(current_dir, &write_tree.folder, &ObjectType::Blob)?
+        }
+    };
 
     Ok(())
 }
