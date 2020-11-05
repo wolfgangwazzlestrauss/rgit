@@ -5,14 +5,10 @@ use std::fs;
 use std::path::Path;
 
 pub fn ignore(path: &Path) -> bool {
-    if let Some(file_name) = path.file_name() {
-        file_name == ".rgit"
-    } else {
-        false
-    }
+    path.components().any(|comp| comp.as_os_str() == ".rgit")
 }
 
-pub fn write_tree(repo: &Path, folder: &Path, object_type: &ObjectType) -> Result<String> {
+pub fn write_tree(repo: &Path, folder: &Path) -> Result<String> {
     for entry in fs::read_dir(folder)? {
         let entry = entry?;
         let path = entry.path();
@@ -20,9 +16,10 @@ pub fn write_tree(repo: &Path, folder: &Path, object_type: &ObjectType) -> Resul
         if ignore(&path) {
             continue;
         } else if path.is_dir() {
-            write_tree(repo, &path, object_type)?;
+            object::hash_object(repo, &path, &ObjectType::Tree)?;
+            write_tree(repo, &path)?;
         } else {
-            object::hash_object(repo, &path, object_type)?;
+            object::hash_object(repo, &path, &ObjectType::Blob)?;
         }
     }
 
@@ -34,13 +31,15 @@ mod tests {
     use super::*;
     use rstest::*;
 
-    /// Paths are marked as ignore based on their file name.
+    /// Paths are ignored if .rgit is in any part.
     #[rstest(
         path_str,
         expected,
         case("file.md", false),
         case(".rgit", true),
-        case("parent/.rgit", true)
+        case("parent/.rgit", true),
+        case("parent/.rgit/", true),
+        case("parent/.rgit/child", true)
     )]
     fn ignore_path_name(path_str: &str, expected: bool) {
         let actual = ignore(Path::new(path_str));

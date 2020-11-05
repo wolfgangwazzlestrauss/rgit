@@ -5,6 +5,7 @@ use std::path::Path;
 
 pub enum ObjectType {
     Blob,
+    Tree,
 }
 
 impl ObjectType {
@@ -12,6 +13,7 @@ impl ObjectType {
     fn value(&self) -> &[u8] {
         match *self {
             ObjectType::Blob => b"blob",
+            ObjectType::Tree => b"tree",
         }
     }
 }
