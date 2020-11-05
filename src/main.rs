@@ -77,7 +77,8 @@ fn main() -> Result<()> {
         }
         SubCommand::Init => rgit::init(current_dir)?,
         SubCommand::WriteTree(write_tree) => {
-            tree::write_tree(current_dir, &write_tree.folder, &ObjectType::Blob)?
+            let hash = tree::write_tree(current_dir, &write_tree.folder, &ObjectType::Blob)?;
+            println!("{}", hash);
         }
     };
 
