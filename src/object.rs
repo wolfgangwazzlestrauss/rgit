@@ -44,11 +44,11 @@ pub fn hash_object(repo: &Path, file: &Path, object_type: &ObjectType) -> Result
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::{proptest, prop_assert_eq};
+    use super::*;
+    use proptest::prelude::{prop_assert_eq, proptest};
     use rstest::*;
     use std::path::PathBuf;
     use std::str;
-    use super::*;
 
     /// Create a repository and initialize it for version control.
     #[fixture]

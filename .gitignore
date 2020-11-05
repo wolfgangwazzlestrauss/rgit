@@ -1,4 +1,6 @@
 .DS_Store
 .rgit/
 .vscode/
+lcov.info
 target/
+tmp/

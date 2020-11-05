@@ -29,5 +29,5 @@ dependencies = ["clean"]
 # Only run on x86_64 Linux.
 [tasks.test-coverage]
 command = "cargo"
-args = ["tarpaulin", "-v"]
+args = ["tarpaulin", "-v", "--ignore-tests", "--out", "Lcov"]
 dependencies = ["clean"]
