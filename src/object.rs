@@ -24,7 +24,9 @@ pub fn cat_file(repo: &Path, hash: &str) -> Result<Vec<u8>> {
     let bytes = fs::read(path)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
-    let binary = parts.nth(1).ok_or(anyhow!("Missing object type header."))?;
+    let binary = parts
+        .nth(1)
+        .ok_or_else(|| anyhow!("Missing object type header."))?;
 
     Ok(binary.to_vec())
 }
