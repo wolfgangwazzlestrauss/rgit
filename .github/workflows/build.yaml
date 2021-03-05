@@ -31,3 +31,16 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+
+  # Run Rust tests on code.
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code repository checkout
+        uses: actions/checkout@v2
+      - name: Install latest stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Run test code coverage
+        uses: actions-rs/tarpaulin@v0.1
