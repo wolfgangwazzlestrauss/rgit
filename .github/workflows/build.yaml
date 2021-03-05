@@ -1,0 +1,29 @@
+# GitHub Actions workflow file.
+#
+# For more information, visit
+# https://docs.github.com/actions/learn-github-actions.
+
+name: build
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+      - master
+
+jobs:
+  # Run Rust tests on code.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code repository checkout
+        uses: actions/checkout@v2
+      - name: Install latest stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Run Rust tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
