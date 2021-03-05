@@ -24,6 +24,11 @@ jobs:
         with:
           components: clippy, rustfmt
           toolchain: stable
+      - name: Check code formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
       - name: Run Rust code linters
         uses: actions-rs/cargo@v1
         with:
