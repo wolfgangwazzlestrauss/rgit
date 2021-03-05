@@ -59,5 +59,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Download dependency cache
+        uses: swatinem/rust-cache@v1
       - name: Run test code coverage
         uses: actions-rs/tarpaulin@v0.1
