@@ -15,7 +15,11 @@ on:
 jobs:
   # Run Rust tests on code.
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Code repository checkout
         uses: actions/checkout@v2
