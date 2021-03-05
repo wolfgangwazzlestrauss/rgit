@@ -13,6 +13,22 @@ on:
       - master
 
 jobs:
+  # Lint Rust code.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code repository checkout
+        uses: actions/checkout@v2
+      - name: Install latest stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          components: clippy, rustfmt
+          toolchain: stable
+      - name: Run Rust code linters
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+
   # Run Rust tests on code.
   test:
     strategy:
