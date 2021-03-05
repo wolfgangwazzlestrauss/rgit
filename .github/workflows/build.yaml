@@ -29,6 +29,9 @@ jobs:
         with:
           command: fmt
           args: -- --check
+      # Does not use dependency caching since Clippy may not work correctly with
+      # cached dependencies. See
+      # https://github.com/rust-lang/rust-clippy/issues/4612 for details.
       - name: Run Rust code linters
         uses: actions-rs/cargo@v1
         with:
@@ -49,6 +52,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Download dependency cache
+        uses: swatinem/rust-cache@v1
       - name: Run Rust tests
         uses: actions-rs/cargo@v1
         with:
