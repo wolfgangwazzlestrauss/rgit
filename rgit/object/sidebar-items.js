@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ObjectType",""]],"fn":[["cat_file","Retrieve file text from hashed objects collection."],["hash_object","Save file to version control objects directory."]]});
