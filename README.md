@@ -1,6 +1,16 @@
 # RGit
 
-## About
+![](https://github.com/wolfgangwazzlestrauss/rgit/workflows/build/badge.svg)
+![](https://img.shields.io/github/repo-size/wolfgangwazzlestrauss/rgit)
+![](https://img.shields.io/github/license/wolfgangwazzlestrauss/rgit)
+
+---
+
+**Documentation**: https://wolfgangwazzlestrauss.github.io/rgit
+
+**Source Code**: https://github.com/wolfgangwazzlestrauss/rgit
+
+---
 
 RGit is a personal implementation of [Git](https://git-scm.com/). It is a small
 project, desgined for learning the requirements of making a full featured
