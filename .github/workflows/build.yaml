@@ -13,8 +13,8 @@ on:
       - master
 
 jobs:
-  # Lint Rust code.
   lint:
+    name: Lint and format code
     runs-on: ubuntu-latest
     steps:
       - name: Code repository checkout
@@ -38,8 +38,8 @@ jobs:
           command: clippy
           args: -- -D warnings
 
-  # Run Rust tests on code.
   test:
+    name: Execute test suite
     strategy:
       fail-fast: false
       matrix:
@@ -59,8 +59,8 @@ jobs:
         with:
           command: test
 
-  # Run Rust tests on code.
   coverage:
+    name: Check code for test coverage
     runs-on: ubuntu-latest
     steps:
       - name: Code repository checkout
@@ -73,3 +73,20 @@ jobs:
         uses: swatinem/rust-cache@v1
       - name: Run test code coverage
         uses: actions-rs/tarpaulin@v0.1
+
+  benchmark:
+    name: Performance regression check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code repository checkout
+        uses: actions/checkout@v2
+      - name: Install latest stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Download dependency cache
+        uses: swatinem/rust-cache@v1
+      - name: Run benchmark suite
+        uses: actions-rs/cargo@v1
+        with:
+          command: bench
