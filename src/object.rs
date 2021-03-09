@@ -98,11 +98,13 @@ mod tests {
     use rstest::*;
     use std::path::PathBuf;
     use std::str;
+    use tempfile;
 
     /// Create a repository and initialize it for version control.
     #[fixture]
     fn repository() -> PathBuf {
         let repo = tempfile::tempdir().unwrap().path().to_owned();
+        fs::create_dir(&repo).unwrap();
         crate::init(&repo).unwrap();
 
         let text = "I am some mock text for a file.";
