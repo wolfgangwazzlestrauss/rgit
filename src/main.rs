@@ -67,18 +67,18 @@ fn main() -> Result<()> {
 
     match opts.sub_command {
         SubCommand::CatFile(cat_file) => {
-            let bytes = object::cat_file(current_dir, &cat_file.object)?;
+            let bytes = object::cat_file(current_dir, &cat_file.object.as_bytes())?;
             println!("{}", str::from_utf8(&bytes)?);
         }
         SubCommand::Commit => std::unimplemented!(),
         SubCommand::HashObject(hash_object) => {
-            let hash = object::hash_object(current_dir, &hash_object.file, &ObjectType::Blob)?;
-            println!("{}", hash);
+            let hash = object::hash_file(current_dir, &hash_object.file, &ObjectType::Blob)?;
+            println!("{}", str::from_utf8(&hash)?);
         }
         SubCommand::Init => rgit::init(current_dir)?,
         SubCommand::WriteTree(write_tree) => {
             let hash = tree::write_tree(current_dir, &write_tree.folder)?;
-            println!("{}", hash);
+            println!("{}", str::from_utf8(&hash)?);
         }
     };
 

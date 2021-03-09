@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 use sha3::{Digest, Sha3_256};
 use std::fs;
 use std::path::Path;
+use std::str;
 
 pub enum ObjectType {
     Blob,
@@ -10,7 +11,7 @@ pub enum ObjectType {
 
 impl ObjectType {
     /// Convert object type to associated string value.
-    fn value(&self) -> &[u8] {
+    pub fn value(&self) -> &[u8] {
         match *self {
             ObjectType::Blob => b"blob",
             ObjectType::Tree => b"tree",
@@ -19,8 +20,8 @@ impl ObjectType {
 }
 
 /// Retrieve file text from hashed objects collection.
-pub fn cat_file(repo: &Path, hash: &str) -> Result<Vec<u8>> {
-    let path = repo.join(format!(".rgit/objects/{}", hash));
+pub fn cat_file(repo: &Path, hash: &[u8]) -> Result<Vec<u8>> {
+    let path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
     let bytes = fs::read(path)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
@@ -32,18 +33,24 @@ pub fn cat_file(repo: &Path, hash: &str) -> Result<Vec<u8>> {
 }
 
 /// Save file to version control objects directory.
-pub fn hash_object(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<String> {
+pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<Vec<u8>> {
     let file_path = repo.join(file);
-    let data = [object_type.value(), &fs::read(file_path)?].join(&0u8);
+    let (hash, data) = hash_object(&fs::read(file_path)?, object_type)?;
 
-    let mut hasher = Sha3_256::new();
-    hasher.update(&data);
-    let hash = format!("{:x}", hasher.finalize());
-
-    let object_path = repo.join(format!(".rgit/objects/{}", hash));
+    let object_path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
     fs::write(object_path, data)?;
 
     Ok(hash)
+}
+
+/// Save file to version control objects directory.
+pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> Result<(Vec<u8>, Vec<u8>)> {
+    let data = [object_type.value(), bytes].join(&0u8);
+
+    let mut hasher = Sha3_256::new();
+    hasher.update(&data);
+    let hash = format!("{:x}", hasher.finalize()).as_bytes().to_vec();
+    Ok((hash, data))
 }
 
 #[cfg(test)]
@@ -77,7 +84,7 @@ mod tests {
     /// File is saved at location in version control directory based on known SHA-3 hash.
     #[rstest]
     fn hash_file_known_id(repository: PathBuf) {
-        hash_object(&repository, &repository.join("code.txt"), &ObjectType::Blob).unwrap();
+        hash_file(&repository, &repository.join("code.txt"), &ObjectType::Blob).unwrap();
 
         let object_id = "7986d944ad3819fbd5431df6704a6aa1a24291b4f19b158b4ba127161ceacc24";
         let object_path = repository.join(".rgit/objects").join(object_id);
@@ -95,7 +102,7 @@ mod tests {
             let file_path = Path::new("hash_invariant.txt");
             fs::write(repo.join(file_path), &expected).unwrap();
 
-            let hash = hash_object(&repo, file_path, &ObjectType::Blob).unwrap();
+            let hash = hash_file(&repo, file_path, &ObjectType::Blob).unwrap();
             let bytes = cat_file(&repo, &hash).unwrap();
 
             let actual = str::from_utf8(&bytes).unwrap();
