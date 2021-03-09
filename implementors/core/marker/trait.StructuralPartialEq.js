@@ -5,6 +5,7 @@ implementors["libc"] = [{"text":"impl StructuralPartialEq for group","synthetic"
 implementors["os_str_bytes"] = [{"text":"impl StructuralPartialEq for EncodingError","synthetic":false,"types":[]}];
 implementors["proc_macro2"] = [{"text":"impl StructuralPartialEq for LineColumn","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for Delimiter","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for Spacing","synthetic":false,"types":[]}];
 implementors["proc_macro_error"] = [{"text":"impl StructuralPartialEq for Level","synthetic":false,"types":[]}];
+implementors["rgit"] = [{"text":"impl StructuralPartialEq for ObjectType","synthetic":false,"types":[]}];
 implementors["serde"] = [{"text":"impl StructuralPartialEq for Error","synthetic":false,"types":[]},{"text":"impl&lt;'a&gt; StructuralPartialEq for Unexpected&lt;'a&gt;","synthetic":false,"types":[]}];
 implementors["strsim"] = [{"text":"impl StructuralPartialEq for StrSimError","synthetic":false,"types":[]}];
 implementors["termcolor"] = [{"text":"impl StructuralPartialEq for ColorChoice","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for ColorSpec","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for Color","synthetic":false,"types":[]},{"text":"impl StructuralPartialEq for ParseColorError","synthetic":false,"types":[]}];
