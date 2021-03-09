@@ -18,11 +18,11 @@ pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
         .nth(1)
         .ok_or_else(|| anyhow!("Missing object type header."))?;
 
-    for line in str::from_utf8(binary)?.split("\n") {
-        let mut parts = line.split(" ");
-        let object_type: ObjectType = parts.next().ok_or(anyhow!(""))?.try_into()?;
-        let hash: Vec<u8> = parts.next().ok_or(anyhow!(""))?.try_into()?;
-        let path = folder.join(parts.next().ok_or(anyhow!(""))?);
+    for line in str::from_utf8(binary)?.split('\n') {
+        let mut parts = line.split(' ');
+        let object_type: ObjectType = parts.next().ok_or_else(|| anyhow!(""))?.try_into()?;
+        let hash: Vec<u8> = parts.next().ok_or_else(|| anyhow!(""))?.try_into()?;
+        let path = folder.join(parts.next().ok_or_else(|| anyhow!(""))?);
 
         match object_type {
             ObjectType::Blob => {
@@ -54,7 +54,7 @@ pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
         let file_name = match path.file_name() {
             Some(file_name) => file_name
                 .to_str()
-                .ok_or(anyhow!("File path is not valid UTF-8."))?,
+                .ok_or_else(|| anyhow!("File path is not valid UTF-8."))?,
             None => continue,
         };
 
