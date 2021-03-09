@@ -1,12 +1,42 @@
 use crate::object;
 use crate::object::ObjectType;
 use anyhow::{anyhow, Result};
+use std::convert::TryInto;
 use std::fs;
 use std::path::Path;
 use std::str;
 
 pub fn ignore(path: &Path) -> bool {
     path.components().any(|comp| comp.as_os_str() == ".rgit")
+}
+
+pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
+    let path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
+    let bytes = fs::read(path)?;
+
+    let mut parts = bytes.split(|&elem| elem == 0u8);
+    let binary = parts
+        .nth(1)
+        .ok_or_else(|| anyhow!("Missing object type header."))?;
+
+    for line in str::from_utf8(binary)?.split("\n") {
+        let mut parts = line.split(" ");
+        let object_type: ObjectType = parts.next().ok_or(anyhow!(""))?.try_into()?;
+        let hash: Vec<u8> = parts.next().ok_or(anyhow!(""))?.try_into()?;
+        let path = folder.join(parts.next().ok_or(anyhow!(""))?);
+
+        match object_type {
+            ObjectType::Blob => {
+                let data = object::cat_file(repo, &hash)?;
+                fs::write(path, data)?;
+            }
+            ObjectType::Tree => {
+                read_tree(repo, &path, &hash)?;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
@@ -36,7 +66,7 @@ pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
             object_id = object::hash_file(repo, &path, &object_type)?;
         }
 
-        let data = [object_type.value(), &object_id, file_name.as_bytes()].join(" ".as_bytes());
+        let data = [object_type.as_bytes(), &object_id, file_name.as_bytes()].join(" ".as_bytes());
         objects.push(data);
     }
 

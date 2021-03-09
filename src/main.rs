@@ -20,9 +20,15 @@ struct HashObject {
 }
 
 #[derive(Clap)]
+struct ReadTree {
+    /// Name of directory associated object to show
+    tree_ish: String,
+}
+
+#[derive(Clap)]
 struct WriteTree {
     /// Name of folder with contents to hash
-    folder: PathBuf,
+    prefix: PathBuf,
 }
 
 /// Basic implmentation of Git.
@@ -49,7 +55,9 @@ enum SubCommand {
     HashObject(HashObject),
     /// Create an empty RGit repository
     Init,
-    /// fdsl
+    /// Reads tree information into the index
+    ReadTree(ReadTree),
+    /// Create a tree object from the current index
     WriteTree(WriteTree),
 }
 
@@ -76,8 +84,11 @@ fn main() -> Result<()> {
             println!("{}", str::from_utf8(&hash)?);
         }
         SubCommand::Init => rgit::init(current_dir)?,
+        SubCommand::ReadTree(read_tree) => {
+            tree::read_tree(current_dir, current_dir, &read_tree.tree_ish.as_bytes())?;
+        }
         SubCommand::WriteTree(write_tree) => {
-            let hash = tree::write_tree(current_dir, &write_tree.folder)?;
+            let hash = tree::write_tree(current_dir, &write_tree.prefix)?;
             println!("{}", str::from_utf8(&hash)?);
         }
     };

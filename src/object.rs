@@ -1,20 +1,56 @@
 use anyhow::{anyhow, Result};
 use sha3::{Digest, Sha3_256};
+use std::convert::TryFrom;
+use std::fmt::{self, Display, Formatter};
 use std::fs;
 use std::path::Path;
 use std::str;
 
+#[derive(PartialEq)]
 pub enum ObjectType {
     Blob,
     Tree,
 }
 
 impl ObjectType {
-    /// Convert object type to associated string value.
-    pub fn value(&self) -> &[u8] {
+    /// Convert object type to associated bytes value.
+    pub fn as_bytes(&self) -> &[u8] {
         match *self {
             ObjectType::Blob => b"blob",
             ObjectType::Tree => b"tree",
+        }
+    }
+}
+
+impl Display for ObjectType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match *self {
+            ObjectType::Blob => write!(f, "blob"),
+            ObjectType::Tree => write!(f, "tree"),
+        }
+    }
+}
+
+impl TryFrom<&str> for ObjectType {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "blob" => Ok(ObjectType::Blob),
+            "tree" => Ok(ObjectType::Tree),
+            _ => Err(anyhow!("ObjectType only accepts values blob and tree.")),
+        }
+    }
+}
+
+impl TryFrom<&[u8]> for ObjectType {
+    type Error = &'static str;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        match value {
+            b"blob" => Ok(ObjectType::Blob),
+            b"tree" => Ok(ObjectType::Tree),
+            _ => Err("ObjectType only accepts values blob and tree."),
         }
     }
 }
@@ -45,10 +81,11 @@ pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<V
 
 /// Save file to version control objects directory.
 pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> Result<(Vec<u8>, Vec<u8>)> {
-    let data = [object_type.value(), bytes].join(&0u8);
+    let data = [object_type.as_bytes(), bytes].join(&0u8);
 
     let mut hasher = Sha3_256::new();
     hasher.update(&data);
+    // TODO: Remove String allocation.
     let hash = format!("{:x}", hasher.finalize()).as_bytes().to_vec();
     Ok((hash, data))
 }
