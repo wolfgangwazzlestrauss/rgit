@@ -3,7 +3,7 @@ use sha3::{Digest, Sha3_256};
 use std::convert::TryFrom;
 use std::fmt::{self, Display, Formatter};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str;
 
 #[derive(PartialEq)]
@@ -57,8 +57,7 @@ impl TryFrom<&[u8]> for ObjectType {
 
 /// Retrieve file text from hashed objects collection.
 pub fn cat_file(repo: &Path, hash: &[u8]) -> Result<Vec<u8>> {
-    let path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(object_path(repo, hash)?)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
     let binary = parts
@@ -73,9 +72,7 @@ pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<V
     let file_path = repo.join(file);
     let (hash, data) = hash_object(&fs::read(file_path)?, object_type)?;
 
-    let object_path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
-    fs::write(object_path, data)?;
-
+    fs::write(object_path(repo, &hash)?, data)?;
     Ok(hash)
 }
 
@@ -88,6 +85,10 @@ pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> Result<(Vec<u8>, V
     // TODO: Remove String allocation.
     let hash = format!("{:x}", hasher.finalize()).as_bytes().to_vec();
     Ok((hash, data))
+}
+
+pub fn object_path(repo: &Path, hash: &[u8]) -> Result<PathBuf> {
+    Ok(repo.join(".rgit/objects").join(str::from_utf8(&hash)?))
 }
 
 #[cfg(test)]

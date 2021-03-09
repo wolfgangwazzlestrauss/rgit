@@ -11,8 +11,7 @@ pub fn ignore(path: &Path) -> bool {
 }
 
 pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
-    let path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(object::object_path(repo, &hash)?)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
     let binary = parts
@@ -31,6 +30,7 @@ pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
                 fs::write(path, data)?;
             }
             ObjectType::Tree => {
+                fs::create_dir(&path)?;
                 read_tree(repo, &path, &hash)?;
             }
         }
@@ -73,9 +73,7 @@ pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
     let tree = objects.join("\n".as_bytes());
     let (hash, data) = object::hash_object(&tree, &ObjectType::Tree)?;
 
-    let object_path = repo.join(".rgit/objects").join(str::from_utf8(&hash)?);
-    fs::write(object_path, data)?;
-
+    fs::write(object::object_path(repo, &hash)?, data)?;
     Ok(hash)
 }
 
