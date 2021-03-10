@@ -61,12 +61,19 @@ jobs:
         with:
           args: --release --target ${{ matrix.target }}
           command: build
+      - name: Build release archive
+        shell: bash
+        run: |
+          mkdir dist
+          cp "target/${{ matrix.target }}/release/rgit" dist/
+          zip -r rgit.zip dist/
       - name: Upload release archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: target/${{ matrix.target }}/release/rgit
-          asset_name: rgit-${{ needs.release.outputs.tag }}-${{ matrix.target }}
+          asset_path: rgit.zip
+          asset_name: >-
+            rgit-${{ needs.release.outputs.tag }}-${{ matrix.target }}.zip
           asset_content_type: application/octet-stream

@@ -73,7 +73,7 @@ jobs:
     name: Check code for test coverage
     runs-on: ubuntu-latest
     steps:
-      - name: Code repository checkout
+      - name: Checkout code repository
         uses: actions/checkout@v2
       - name: Install latest stable Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -88,7 +88,7 @@ jobs:
     name: Check for benchmark performance
     runs-on: ubuntu-latest
     steps:
-      - name: Code repository checkout
+      - name: Checkout code repository
         uses: actions/checkout@v2
       - name: Install latest stable Rust toolchain
         uses: actions-rs/toolchain@v1
