@@ -34,9 +34,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: doc
-      - name: Add HTML redirect page
+      # Cargo doc does not produce a root index.html page.
+      - name: Add HTML root redirect page
         run: |
-          echo '<meta http-equiv=refresh content=0;url=rgit/index.html>' > target/doc/index.html
+          printf '<head><meta http-equiv="refresh" content="0; url=rgit/index.html" /></head>' > target/doc/index.html
       - name: Upload documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
