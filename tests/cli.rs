@@ -23,8 +23,14 @@ fn temp_repo() -> PathBuf {
 }
 
 #[rstest]
-fn init_success(_temp_repo: PathBuf) {
+fn init(_temp_repo: PathBuf) {
     let mut cmd = Command::cargo_bin("rgit").unwrap();
     cmd.arg("init");
     cmd.assert().success();
+}
+
+#[test]
+fn no_args() {
+    let mut cmd = Command::cargo_bin("rgit").unwrap();
+    cmd.assert().failure();
 }
