@@ -31,11 +31,10 @@ struct WriteTree {
     prefix: PathBuf,
 }
 
-/// Basic implmentation of Git.
+/// Personal implementation of Git in Rust.
 #[derive(Clap)]
 #[clap(
-    version = "0.0.1",
-    author = "Macklan Weinstein <wolfgangwazzlestrauss@gmail.com>"
+    version = env!("CARGO_PKG_VERSION"),
 )]
 struct Opts {
     /// Increase the verbosity of messages

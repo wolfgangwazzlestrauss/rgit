@@ -1,13 +1,13 @@
 [package]
 authors = ["Macklan Weinstein <wolfgangwazzlestrauss@gmail.com>"]
-description = "Personal implementation of Git with Rust"
+description = "Personal implementation of Git in Rust"
 documentation = "https://wolfgangwazzlestrauss.github.io/rgit"
 edition = "2018"
 homepage = "https://github.com/wolfgangwazzlestrauss/rgit"
 license = "MIT"
 name = "rgit"
 readme = "README.md"
-version = "0.0.1"
+version = "0.0.3"
 
 [dependencies]
 anyhow = "1.0.32"
