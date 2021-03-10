@@ -19,6 +19,16 @@ jobs:
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v2
+      - name: Install Node interpreter
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - name: Install Prettier formatter
+        run: |
+          npm install -g prettier
+      - name: Check configuration file formatting
+        run: |
+          prettier --check .
       - name: Install latest stable Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
