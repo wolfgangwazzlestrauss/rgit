@@ -18,8 +18,8 @@ on:
       - master
 
 jobs:
-  # Build documentation and publish to GitHub Pages.
   pages:
+    name: Build documentation and publish to GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - name: Code repository checkout
