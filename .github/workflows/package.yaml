@@ -13,7 +13,7 @@ on:
 
 jobs:
   release:
-    name: Build Rust binary and upload to GitHub releases
+    name: Create a GitHub release
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.branch.outputs.upload_url }}
+          upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: target/${{ matrix.target }}/release/rgit
           asset_name: rgit-${{ github.ref }}-${{ matrix.target }}
           asset_content_type: application/octet-stream

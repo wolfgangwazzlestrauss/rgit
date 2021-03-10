@@ -1,0 +1,6 @@
+.git/
+.rgit/
+*.rs
+proptest-regressions/
+target/
+tmp/

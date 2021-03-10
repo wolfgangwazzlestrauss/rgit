@@ -19,4 +19,4 @@ following the [DIY Git in Python](https://www.leshenko.net/p/ugit/) blog posts
 and translating the Python code to idiomatic Rust code.
 
 RGit development is designed to follow best practices by implementing testing,
-benchmarking, documentation, and deployment. 
+benchmarking, documentation, and deployment.
