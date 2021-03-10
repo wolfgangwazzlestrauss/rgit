@@ -85,7 +85,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
 
   benchmark:
-    name: Performance regression check
+    name: Check for benchmark performance
     runs-on: ubuntu-latest
     steps:
       - name: Code repository checkout

@@ -31,9 +31,9 @@ struct WriteTree {
     prefix: PathBuf,
 }
 
-/// Personal implementation of Git in Rust.
 #[derive(Clap)]
 #[clap(
+    about = env!("CARGO_PKG_DESCRIPTION"),
     version = env!("CARGO_PKG_VERSION"),
 )]
 struct Opts {
