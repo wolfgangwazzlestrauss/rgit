@@ -1,11 +1,4 @@
-<style>
-.title {
-  font-weight: bold;
-  text-align: center;
-}
-</style>
-
-<h1 class="title">RGit</h1>
+<h1 style="font-weight: bold; text-align: center;">RGit</h1>
 
 ![](https://github.com/wolfgangwazzlestrauss/rgit/workflows/build/badge.svg)
 ![](https://img.shields.io/github/repo-size/wolfgangwazzlestrauss/rgit)
