@@ -7,7 +7,7 @@ homepage = "https://github.com/wolfgangwazzlestrauss/rgit"
 license = "MIT"
 name = "rgit"
 readme = "README.md"
-version = "0.0.4"
+version = "0.0.5"
 
 [dependencies]
 anyhow = "1.0.32"
