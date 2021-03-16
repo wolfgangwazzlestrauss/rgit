@@ -22,8 +22,7 @@ jobs:
       - name: Extract Git tag
         id: extract_tag
         shell: bash
-        run: |
-          echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
+        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
       - name: Create GitHub release
         id: create_release
         uses: actions/create-release@v1
@@ -32,10 +31,9 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body: ${{ steps.github_release.outputs.changelog }}
 
-  archives:
-    name: Build and upload archives to GitHub release
+  archive:
+    name: Upload release archive for ${{ matrix.target }}
     needs: release
     strategy:
       fail-fast: false
@@ -76,12 +74,14 @@ jobs:
         # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md#language-and-runtime.
         shell: bash
         run: |
-          mkdir dist
-          cp "target/${{ matrix.target }}/release/rgit" dist/
+          stage="rgit-${{ needs.release.outputs.tag }}-${{ matrix.target }}"
+          mkdir "$stage" dist
+          cp {README.md,LICENSE.md} "$stage/"
+          cp "target/${{ matrix.target }}/release/rgit" "$stage/"
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a rgit.zip dist/
+            7z a dist/rgit.zip "$stage/"
           else
-            zip -r rgit.zip dist/
+            zip -r dist/rgit.zip "$stage/"
           fi
       - name: Upload release archive
         uses: actions/upload-release-asset@v1
@@ -89,7 +89,31 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: rgit.zip
+          asset_path: dist/rgit.zip
           asset_name: >-
             rgit-${{ needs.release.outputs.tag }}-${{ matrix.target }}.zip
+          asset_content_type: application/octet-stream
+
+  package:
+    name: Create Debian package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code repository
+        uses: actions/checkout@v2
+      - name: Install latest stable Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build release binary
+        uses: actions-rs/cargo@v1
+        with:
+          command: deb
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: target/debian/rgit_${{ needs.release.outputs.tag }}_amd64.deb
+          asset_name: rgit_${{ needs.release.outputs.tag }}_amd64.deb
           asset_content_type: application/octet-stream
