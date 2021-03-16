@@ -114,6 +114,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: target/debian/rgit_${{ needs.release.outputs.tag }}_amd64.deb
+          asset_path: >-
+            target/debian/rgit_${{ needs.release.outputs.tag }}_amd64.deb
           asset_name: rgit_${{ needs.release.outputs.tag }}_amd64.deb
           asset_content_type: application/octet-stream
