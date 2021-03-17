@@ -1,9 +1,8 @@
 /// Simple Git implementation with Rust.
 use anyhow::Result;
 use clap::Clap;
-use rgit::object;
 use rgit::object::ObjectType;
-use rgit::tree;
+use rgit::{commit, object, tree};
 use std::path::{Path, PathBuf};
 use std::str;
 
@@ -11,6 +10,14 @@ use std::str;
 struct CatFile {
     /// Name of object to show
     object: String,
+}
+
+#[derive(Clap)]
+struct Commit {
+    /// Name of folder with contents to commit
+    prefix: PathBuf,
+    /// Commit message
+    message: String,
 }
 
 #[derive(Clap)]
@@ -49,7 +56,7 @@ enum SubCommand {
     /// Provide content for repository objects
     CatFile(CatFile),
     /// Record changes to the repository
-    Commit,
+    Commit(Commit),
     /// Compute object ID value with contents of named file
     HashObject(HashObject),
     /// Create an empty RGit repository
@@ -77,7 +84,10 @@ fn main() -> Result<()> {
             let bytes = object::cat_file(current_dir, &cat_file.object.as_bytes())?;
             println!("{}", str::from_utf8(&bytes)?);
         }
-        SubCommand::Commit => std::unimplemented!(),
+        SubCommand::Commit(commit_) => {
+            let hash = commit::commit(current_dir, &commit_.prefix, &commit_.message)?;
+            println!("{}", str::from_utf8(&hash)?);
+        }
         SubCommand::HashObject(hash_object) => {
             let hash = object::hash_file(current_dir, &hash_object.file, &ObjectType::Blob)?;
             println!("{}", str::from_utf8(&hash)?);

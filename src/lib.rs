@@ -8,6 +8,7 @@ use anyhow::Result;
 use std::fs;
 use std::path::Path;
 
+pub mod commit;
 pub mod object;
 pub mod tree;
 
