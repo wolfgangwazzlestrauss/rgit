@@ -38,8 +38,8 @@ impl TryFrom<&str> for Commit {
             .split_ascii_whitespace();
         let tree = match parts.next() {
             Some("tree") => parts.next().ok_or(CommitInvalid::MissingHash)?.to_string(),
-            Some(_) => Err(CommitInvalid::WrongMarker)?,
-            None => Err(CommitInvalid::EmptyLine)?,
+            Some(_) => return Err(CommitInvalid::WrongMarker),
+            None => return Err(CommitInvalid::EmptyLine),
         };
 
         let mut parts = lines
@@ -53,7 +53,7 @@ impl TryFrom<&str> for Commit {
 
                 Some(parts.next().ok_or(CommitInvalid::MissingHash)?.to_string())
             }
-            Some(_) => Err(CommitInvalid::WrongMarker)?,
+            Some(_) => return Err(CommitInvalid::WrongMarker),
             None => None,
         };
 
@@ -64,9 +64,9 @@ impl TryFrom<&str> for Commit {
             .to_string();
 
         Ok(Commit {
-            message: message,
-            parent: parent,
-            tree: tree,
+            message,
+            parent,
+            tree,
         })
     }
 }
