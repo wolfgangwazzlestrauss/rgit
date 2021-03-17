@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["init","Initialize version control directory."]],"mod":[["object",""],["tree",""]]});
+initSidebarItems({"fn":[["init","Initialize version control directory."]],"mod":[["commit",""],["object",""],["tree",""]]});

@@ -2,6 +2,8 @@
 implementors["clap"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["digest"] = [{"text":"impl Error for InvalidOutputSize","synthetic":false,"types":[]}];
 implementors["os_str_bytes"] = [{"text":"impl Error for EncodingError","synthetic":false,"types":[]}];
+implementors["proc_macro2"] = [{"text":"impl Error for LexError","synthetic":false,"types":[]}];
+implementors["rgit"] = [{"text":"impl Error for CommitInvalid","synthetic":false,"types":[]}];
 implementors["serde"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["strsim"] = [{"text":"impl Error for StrSimError","synthetic":false,"types":[]}];
 implementors["syn"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
