@@ -123,7 +123,10 @@ pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> Result<Vec<u8>
     Ok(hash)
 }
 
+#[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn try_from_empty_message() {
         let content = "\
