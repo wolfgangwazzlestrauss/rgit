@@ -36,8 +36,6 @@ jobs:
       - name: Add HTML root redirect page
         run: |
           printf '<head><meta http-equiv="refresh" content="0; url=rgit/index.html" /></head>' > target/doc/index.html
-      - name: Show doc files
-        run: tree target/doc
       - name: Upload documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
