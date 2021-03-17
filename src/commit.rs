@@ -1,37 +1,43 @@
 use crate::object::ObjectType;
 use crate::{object, tree};
 use anyhow::{anyhow, Result};
+use std::convert::TryFrom;
 use std::fs;
 use std::io;
 use std::path::Path;
 use std::str;
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Commit {
     message: String,
     parent: Option<String>,
     tree: String,
 }
 
-impl Commit {
-    pub fn from_str(content: &str) -> Result<Commit> {
-        let mut lines = content.lines();
+impl TryFrom<&str> for Commit {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self> {
+        let mut lines = value.lines();
 
         let mut parts = lines
             .next()
-            .ok_or(anyhow!("Missing first line."))?
+            .ok_or(anyhow!("Missing first line"))?
+            .trim()
             .split_ascii_whitespace();
         let tree = match parts.next() {
             Some("tree") => parts
                 .next()
                 .ok_or(anyhow!("Missing tree hash"))?
                 .to_string(),
-            Some(_) => Err(anyhow!("Incorrect first line."))?,
-            None => Err(anyhow!("Missing tree hash."))?,
+            Some(_) => Err(anyhow!("Invalid first line"))?,
+            None => Err(anyhow!("Missing tree marker"))?,
         };
 
         let mut parts = lines
             .next()
-            .ok_or(anyhow!("Missing second line."))?
+            .ok_or(anyhow!("Missing second line"))?
+            .trim()
             .split_ascii_whitespace();
         let parent = match parts.next() {
             Some("parent") => {
@@ -44,13 +50,14 @@ impl Commit {
                         .to_string(),
                 )
             }
-            Some(_) => None,
-            None => Err(anyhow!("Missing tree hash."))?,
+            Some(_) => Err(anyhow!("Invalid second line"))?,
+            None => None,
         };
 
         let message = lines
             .next()
             .ok_or(anyhow!("Missing message line."))?
+            .trim()
             .to_string();
 
         Ok(Commit {
@@ -63,7 +70,7 @@ impl Commit {
 
 pub fn get_commit(repo: &Path, hash: &[u8]) -> Result<Commit> {
     let content = object::cat_file(repo, hash)?;
-    Commit::from_str(str::from_utf8(&content)?)
+    Commit::try_from(str::from_utf8(&content)?)
 }
 
 fn get_head(repo: &Path) -> io::Result<Option<Vec<u8>>> {
@@ -106,4 +113,63 @@ pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> Result<Vec<u8>
 
     fs::write(object::object_path(repo, &hash)?, data)?;
     Ok(hash)
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn try_from_empty_message() {
+        let content = "\
+            tree e2037a52b1d22a09e6ca23ef6a16f2ba201a366608a0af06654cbd6e09f2098a\n\
+            parent 82220d0a23b54286a6bc32a9f7e882e1174fca57352c80e0a61483a16ffac46f\n\
+            \n\
+            \n\
+        ";
+
+        let expected = Commit {
+            message: String::new(),
+            parent: Some(String::from("82220d0a23b54286a6bc32a9f7e882e1174fca57352c80e0a61483a16ffac46f")),
+            tree: String::from("e2037a52b1d22a09e6ca23ef6a16f2ba201a366608a0af06654cbd6e09f2098a"),
+        };
+        let actual = Commit::try_from(content).unwrap();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn try_from_no_parent() {
+        let content = "\
+            tree e2037a52b1d22a09e6ca23ef6a16f2ba201a366608a0af06654cbd6e09f2098a\n\
+            \n\
+            Generate project layout\n\
+        ";
+
+        let expected = Commit {
+            message: String::from("Generate project layout"),
+            parent: None,
+            tree: String::from("e2037a52b1d22a09e6ca23ef6a16f2ba201a366608a0af06654cbd6e09f2098a"),
+        };
+        let actual = Commit::try_from(content).unwrap();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn try_from_with_parent() {
+        let content = "\
+            tree a56a019e3b1739c35063004884b8cb90012a1f8737eece7b3f7426dcbdf3c84a\n\
+            parent 13a4dbddfa611cc36287e2ae9f1fd17e94409de4472251a937abc65114d657be\n\
+            \n\
+            Add a test with a parent commit\n\
+        ";
+
+        let expected = Commit {
+            message: String::from("Add a test with a parent commit"),
+            parent: Some(String::from(
+                "13a4dbddfa611cc36287e2ae9f1fd17e94409de4472251a937abc65114d657be",
+            )),
+            tree: String::from("a56a019e3b1739c35063004884b8cb90012a1f8737eece7b3f7426dcbdf3c84a"),
+        };
+        let actual = Commit::try_from(content).unwrap();
+        assert_eq!(actual, expected);
+    }
 }
