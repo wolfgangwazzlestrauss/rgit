@@ -30,7 +30,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          release_name: RGit ${{ steps.extract_tag.outputs.tag }}
+          body: >-
+            See the
+            [changelog](https://github.com/wolfgangwazzlestrauss/rgit/blob/${{
+            steps.extract_tag.outputs.tag }}/CHANGELOG.md) for more information.
 
   archive:
     name: Upload release archive for ${{ matrix.target }}
