@@ -1,6 +1,5 @@
-/// Simple Git implementation with Rust.
-use anyhow::Result;
 use clap::Clap;
+use color_eyre::eyre;
 use rgit::object::ObjectType;
 use rgit::{commit, object, tree};
 use std::path::{Path, PathBuf};
@@ -67,7 +66,8 @@ enum SubCommand {
     WriteTree(WriteTree),
 }
 
-fn main() -> Result<()> {
+fn main() -> eyre::Result<()> {
+    color_eyre::install()?;
     let opts: Opts = Opts::parse();
 
     match opts.verbose {

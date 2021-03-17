@@ -4,16 +4,15 @@
 //!  Python](https://www.leshenko.net/p/ugit/) blog posts and translating the Python code to
 //!  idiomatic Rust code.
 
-use anyhow::Result;
-use std::fs;
 use std::path::Path;
+use std::{fs, io};
 
 pub mod commit;
 pub mod object;
 pub mod tree;
 
 /// Initialize version control directory.
-pub fn init(repo: &Path) -> Result<()> {
+pub fn init(repo: &Path) -> io::Result<()> {
     let vc_dir = repo.join(".rgit");
     let obj_dir = vc_dir.join("objects");
 

@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
 use sha3::{Digest, Sha3_256};
 use std::convert::TryFrom;
 use std::fmt::{self, Display, Formatter};
 use std::path::{Path, PathBuf};
-use std::{fs, str};
+use std::str::Utf8Error;
+use std::{fs, io, str};
 
 #[derive(PartialEq)]
 pub enum ObjectType {
@@ -31,13 +31,13 @@ impl Display for ObjectType {
 }
 
 impl TryFrom<&str> for ObjectType {
-    type Error = anyhow::Error;
+    type Error = eyre::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "blob" => Ok(ObjectType::Blob),
             "tree" => Ok(ObjectType::Tree),
-            _ => Err(anyhow!("ObjectType only accepts values blob and tree.")),
+            _ => Err(eyre::eyre!("ObjectType only accepts values blob and tree.")),
         }
     }
 }
@@ -55,19 +55,19 @@ impl TryFrom<&[u8]> for ObjectType {
 }
 
 /// Retrieve file text from hashed objects collection.
-pub fn cat_file(repo: &Path, hash: &[u8]) -> Result<Vec<u8>> {
+pub fn cat_file(repo: &Path, hash: &[u8]) -> eyre::Result<Vec<u8>> {
     let bytes = fs::read(object_path(repo, hash)?)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
     let binary = parts
         .nth(1)
-        .ok_or_else(|| anyhow!("Missing object type header."))?;
+        .ok_or_else(|| eyre::eyre!("Missing object type header."))?;
 
     Ok(binary.to_vec())
 }
 
 /// Save file to version control objects directory.
-pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<Vec<u8>> {
+pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> eyre::Result<Vec<u8>> {
     let file_path = repo.join(file);
     let (hash, data) = hash_object(&fs::read(file_path)?, object_type)?;
 
@@ -76,7 +76,7 @@ pub fn hash_file(repo: &Path, file: &Path, object_type: &ObjectType) -> Result<V
 }
 
 /// Save file to version control objects directory.
-pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> Result<(Vec<u8>, Vec<u8>)> {
+pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> io::Result<(Vec<u8>, Vec<u8>)> {
     let data = [object_type.as_bytes(), bytes].join(&0u8);
 
     let mut hasher = Sha3_256::new();
@@ -86,7 +86,7 @@ pub fn hash_object(bytes: &[u8], object_type: &ObjectType) -> Result<(Vec<u8>, V
     Ok((hash, data))
 }
 
-pub fn object_path(repo: &Path, hash: &[u8]) -> Result<PathBuf> {
+pub fn object_path(repo: &Path, hash: &[u8]) -> Result<PathBuf, Utf8Error> {
     Ok(repo.join(".rgit/objects").join(str::from_utf8(&hash)?))
 }
 

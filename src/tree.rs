@@ -1,6 +1,5 @@
 use crate::object;
 use crate::object::ObjectType;
-use anyhow::{anyhow, Result};
 use std::convert::TryInto;
 use std::path::Path;
 use std::{fs, str};
@@ -9,19 +8,19 @@ pub fn ignore(path: &Path) -> bool {
     path.components().any(|comp| comp.as_os_str() == ".rgit")
 }
 
-pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
+pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> eyre::Result<()> {
     let bytes = fs::read(object::object_path(repo, &hash)?)?;
 
     let mut parts = bytes.split(|&elem| elem == 0u8);
     let binary = parts
         .nth(1)
-        .ok_or_else(|| anyhow!("Missing object type header."))?;
+        .ok_or_else(|| eyre::eyre!("Missing object type header."))?;
 
     for line in str::from_utf8(binary)?.split('\n') {
         let mut parts = line.split(' ');
-        let object_type: ObjectType = parts.next().ok_or_else(|| anyhow!(""))?.try_into()?;
-        let hash: Vec<u8> = parts.next().ok_or_else(|| anyhow!(""))?.try_into()?;
-        let path = folder.join(parts.next().ok_or_else(|| anyhow!(""))?);
+        let object_type: ObjectType = parts.next().ok_or_else(|| eyre::eyre!(""))?.try_into()?;
+        let hash: Vec<u8> = parts.next().ok_or_else(|| eyre::eyre!(""))?.try_into()?;
+        let path = folder.join(parts.next().ok_or_else(|| eyre::eyre!(""))?);
 
         match object_type {
             ObjectType::Blob => {
@@ -38,7 +37,7 @@ pub fn read_tree(repo: &Path, folder: &Path, hash: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
+pub fn write_tree(repo: &Path, folder: &Path) -> eyre::Result<Vec<u8>> {
     let mut objects: Vec<Vec<u8>> = Vec::new();
 
     for entry in fs::read_dir(folder)? {
@@ -53,7 +52,7 @@ pub fn write_tree(repo: &Path, folder: &Path) -> Result<Vec<u8>> {
         let file_name = match path.file_name() {
             Some(file_name) => file_name
                 .to_str()
-                .ok_or_else(|| anyhow!("File path is not valid UTF-8."))?,
+                .ok_or_else(|| eyre::eyre!("File path is not valid UTF-8."))?,
             None => continue,
         };
 

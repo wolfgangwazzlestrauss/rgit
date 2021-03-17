@@ -1,6 +1,5 @@
 use crate::object::ObjectType;
 use crate::{object, tree};
-use anyhow::Result;
 use std::convert::TryFrom;
 use std::path::Path;
 use std::{fs, io, str};
@@ -8,14 +7,14 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum CommitInvalid {
-    #[error("content does not have enough lines")]
+    #[error("Content does not have enough lines")]
     NotEnoughLines,
-    #[error("line does not have an associated hash")]
-    MissingHash,
-    #[error("line should not be empty")]
-    EmptyLine,
-    #[error("line hash incorrect marker")]
-    WrongMarker,
+    #[error("{0}: Line does not have an associated hash")]
+    MissingHash(String),
+    #[error("Line {0} should not be empty")]
+    EmptyLine(usize),
+    #[error("{0}: Incorrect line marker")]
+    WrongMarker(String),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -31,29 +30,31 @@ impl TryFrom<&str> for Commit {
     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
         let mut lines = value.lines();
 
-        let mut parts = lines
-            .next()
-            .ok_or(CommitInvalid::NotEnoughLines)?
-            .trim()
-            .split_ascii_whitespace();
+        let line = lines.next().ok_or(CommitInvalid::NotEnoughLines)?.trim();
+        let mut parts = line.split_ascii_whitespace();
         let tree = match parts.next() {
-            Some("tree") => parts.next().ok_or(CommitInvalid::MissingHash)?.to_string(),
-            Some(_) => return Err(CommitInvalid::WrongMarker),
-            None => return Err(CommitInvalid::EmptyLine),
+            Some("tree") => parts
+                .next()
+                .ok_or_else(|| CommitInvalid::MissingHash(line.into()))?
+                .to_string(),
+            Some(marker) => return Err(CommitInvalid::WrongMarker(marker.to_string())),
+            None => return Err(CommitInvalid::EmptyLine(0)),
         };
 
-        let mut parts = lines
-            .next()
-            .ok_or(CommitInvalid::NotEnoughLines)?
-            .trim()
-            .split_ascii_whitespace();
+        let line = lines.next().ok_or(CommitInvalid::NotEnoughLines)?.trim();
+        let mut parts = line.split_ascii_whitespace();
         let parent = match parts.next() {
             Some("parent") => {
                 lines.next();
 
-                Some(parts.next().ok_or(CommitInvalid::MissingHash)?.to_string())
+                Some(
+                    parts
+                        .next()
+                        .ok_or_else(|| CommitInvalid::MissingHash(line.into()))?
+                        .to_string(),
+                )
             }
-            Some(_) => return Err(CommitInvalid::WrongMarker),
+            Some(marker) => return Err(CommitInvalid::WrongMarker(marker.into())),
             None => None,
         };
 
@@ -72,7 +73,7 @@ impl TryFrom<&str> for Commit {
 }
 
 /// Find commit in repository and parse content.
-pub fn get_commit(repo: &Path, hash: &[u8]) -> Result<Commit> {
+pub fn get_commit(repo: &Path, hash: &[u8]) -> eyre::Result<Commit> {
     let content = object::cat_file(repo, hash)?;
     Ok(Commit::try_from(str::from_utf8(&content)?)?)
 }
@@ -89,7 +90,7 @@ fn get_head(repo: &Path) -> io::Result<Option<Vec<u8>>> {
 }
 
 /// Get log repository commits in most recent order.
-fn _log(repo: &Path) -> Result<String> {
+fn _log(repo: &Path) -> io::Result<String> {
     let _hash = match get_head(repo)? {
         Some(hash) => hash,
         None => return Ok(String::new()),
@@ -99,12 +100,12 @@ fn _log(repo: &Path) -> Result<String> {
 }
 
 /// Set hash for repository head.
-fn set_head(repo: &Path, hash: &[u8]) -> Result<()> {
+fn set_head(repo: &Path, hash: &[u8]) -> io::Result<()> {
     Ok(fs::write(repo.join(".rgit/HEAD"), hash)?)
 }
 
 /// Save commit to version control as an object.
-pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> Result<Vec<u8>> {
+pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> eyre::Result<Vec<u8>> {
     let hash = tree::write_tree(repo, folder)?;
     let hash = str::from_utf8(&hash)?;
 
