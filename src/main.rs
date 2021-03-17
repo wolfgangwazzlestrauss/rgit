@@ -1,4 +1,4 @@
-use clap::Clap;
+use clap::{AppSettings, Clap};
 use color_eyre::eyre;
 use rgit::object::ObjectType;
 use rgit::{commit, object, tree};
@@ -40,6 +40,8 @@ struct WriteTree {
 #[derive(Clap)]
 #[clap(
     about = env!("CARGO_PKG_DESCRIPTION"),
+    global_setting = AppSettings::ColorAuto,
+    global_setting = AppSettings::ColoredHelp,
     version = env!("CARGO_PKG_VERSION"),
 )]
 struct Opts {
