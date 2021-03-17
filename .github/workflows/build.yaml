@@ -49,12 +49,19 @@ jobs:
           args: -- -D warnings
 
   test:
-    name: Execute test suite
+    name: Run tests for ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        os: [Linux, MacOS, Windows]
+        include:
+          - os: Linux
+            runner: ubuntu-latest
+          - os: MacOS
+            runner: macos-latest
+          - os: Windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v2
