@@ -68,11 +68,13 @@ impl TryFrom<&str> for Commit {
     }
 }
 
+/// Find commit in repository and parse content.
 pub fn get_commit(repo: &Path, hash: &[u8]) -> Result<Commit> {
     let content = object::cat_file(repo, hash)?;
     Commit::try_from(str::from_utf8(&content)?)
 }
 
+/// Get hash of repository head if it exists.
 fn get_head(repo: &Path) -> io::Result<Option<Vec<u8>>> {
     match fs::read(repo.join(".rgit/HEAD")) {
         Ok(head) => Ok(Some(head)),
@@ -83,6 +85,7 @@ fn get_head(repo: &Path) -> io::Result<Option<Vec<u8>>> {
     }
 }
 
+/// Get log repository commits in most recent order.
 fn log(repo: &Path) -> Result<String> {
     let hash = match get_head(repo)? {
         Some(hash) => hash,
@@ -92,10 +95,12 @@ fn log(repo: &Path) -> Result<String> {
     Ok(String::new())
 }
 
+/// Set hash for repository head.
 fn set_head(repo: &Path, hash: &[u8]) -> Result<()> {
     Ok(fs::write(repo.join(".rgit/HEAD"), hash)?)
 }
 
+/// Save commit to version control as an object.
 pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> Result<Vec<u8>> {
     let hash = tree::write_tree(repo, folder)?;
     let hash = str::from_utf8(&hash)?;
@@ -129,7 +134,9 @@ mod tests {
 
         let expected = Commit {
             message: String::new(),
-            parent: Some(String::from("82220d0a23b54286a6bc32a9f7e882e1174fca57352c80e0a61483a16ffac46f")),
+            parent: Some(String::from(
+                "82220d0a23b54286a6bc32a9f7e882e1174fca57352c80e0a61483a16ffac46f",
+            )),
             tree: String::from("e2037a52b1d22a09e6ca23ef6a16f2ba201a366608a0af06654cbd6e09f2098a"),
         };
         let actual = Commit::try_from(content).unwrap();
