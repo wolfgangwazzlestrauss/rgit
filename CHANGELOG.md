@@ -7,6 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 0.0.7 - 2021-03-16
 
+### Added
+
+- Experimental commit support.
+
+### Changed
+
+- Error reporting handler from anyhow to eyre.
+
+## 0.0.7 - 2021-03-16
+
 ### Fixed
 
 - Out of sync version string in package metadata.
