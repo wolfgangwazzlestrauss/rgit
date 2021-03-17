@@ -85,7 +85,7 @@ fn main() -> Result<()> {
             println!("{}", str::from_utf8(&bytes)?);
         }
         SubCommand::Commit(commit_) => {
-            let hash = commit::commit(current_dir, &commit_.prefix, &commit_.message)?;
+            let hash = commit::write_commit(current_dir, &commit_.prefix, &commit_.message)?;
             println!("{}", str::from_utf8(&hash)?);
         }
         SubCommand::HashObject(hash_object) => {
