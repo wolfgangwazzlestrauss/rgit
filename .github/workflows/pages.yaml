@@ -28,8 +28,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Download dependency cache
-        uses: swatinem/rust-cache@v1
       - name: Build static site documentation
         uses: actions-rs/cargo@v1
         with:
