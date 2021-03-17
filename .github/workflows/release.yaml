@@ -3,7 +3,7 @@
 # For more information, visit
 # https://docs.github.com/actions/learn-github-actions.
 
-name: package
+name: release
 
 # Make workflow run only for pushed SemVer tags.
 on:
@@ -96,6 +96,7 @@ jobs:
 
   package:
     name: Create Debian package
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code repository
@@ -104,6 +105,11 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: Install cargo-deb
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-deb
+          version: latest
       - name: Build release binary
         uses: actions-rs/cargo@v1
         with:
