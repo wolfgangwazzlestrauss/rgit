@@ -2,9 +2,8 @@ use crate::object;
 use crate::object::ObjectType;
 use anyhow::{anyhow, Result};
 use std::convert::TryInto;
-use std::fs;
 use std::path::Path;
-use std::str;
+use std::{fs, str};
 
 pub fn ignore(path: &Path) -> bool {
     path.components().any(|comp| comp.as_os_str() == ".rgit")

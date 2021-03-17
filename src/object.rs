@@ -2,9 +2,8 @@ use anyhow::{anyhow, Result};
 use sha3::{Digest, Sha3_256};
 use std::convert::TryFrom;
 use std::fmt::{self, Display, Formatter};
-use std::fs;
 use std::path::{Path, PathBuf};
-use std::str;
+use std::{fs, str};
 
 #[derive(PartialEq)]
 pub enum ObjectType {

@@ -1,11 +1,22 @@
 use crate::object::ObjectType;
 use crate::{object, tree};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::convert::TryFrom;
-use std::fs;
-use std::io;
 use std::path::Path;
-use std::str;
+use std::{fs, io, str};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum CommitInvalid {
+    #[error("content does not have enough lines")]
+    NotEnoughLines,
+    #[error("line does not have an associated hash")]
+    MissingHash,
+    #[error("line should not be empty")]
+    EmptyLine,
+    #[error("line hash incorrect marker")]
+    WrongMarker,
+}
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Commit {
@@ -15,48 +26,40 @@ pub struct Commit {
 }
 
 impl TryFrom<&str> for Commit {
-    type Error = anyhow::Error;
+    type Error = CommitInvalid;
 
-    fn try_from(value: &str) -> Result<Self> {
+    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
         let mut lines = value.lines();
 
         let mut parts = lines
             .next()
-            .ok_or(anyhow!("Missing first line"))?
+            .ok_or(CommitInvalid::NotEnoughLines)?
             .trim()
             .split_ascii_whitespace();
         let tree = match parts.next() {
-            Some("tree") => parts
-                .next()
-                .ok_or(anyhow!("Missing tree hash"))?
-                .to_string(),
-            Some(_) => Err(anyhow!("Invalid first line"))?,
-            None => Err(anyhow!("Missing tree marker"))?,
+            Some("tree") => parts.next().ok_or(CommitInvalid::MissingHash)?.to_string(),
+            Some(_) => Err(CommitInvalid::WrongMarker)?,
+            None => Err(CommitInvalid::EmptyLine)?,
         };
 
         let mut parts = lines
             .next()
-            .ok_or(anyhow!("Missing second line"))?
+            .ok_or(CommitInvalid::NotEnoughLines)?
             .trim()
             .split_ascii_whitespace();
         let parent = match parts.next() {
             Some("parent") => {
                 lines.next();
 
-                Some(
-                    parts
-                        .next()
-                        .ok_or(anyhow!("Missing parent hash"))?
-                        .to_string(),
-                )
+                Some(parts.next().ok_or(CommitInvalid::MissingHash)?.to_string())
             }
-            Some(_) => Err(anyhow!("Invalid second line"))?,
+            Some(_) => Err(CommitInvalid::WrongMarker)?,
             None => None,
         };
 
         let message = lines
             .next()
-            .ok_or(anyhow!("Missing message line."))?
+            .ok_or(CommitInvalid::NotEnoughLines)?
             .trim()
             .to_string();
 
@@ -71,7 +74,7 @@ impl TryFrom<&str> for Commit {
 /// Find commit in repository and parse content.
 pub fn get_commit(repo: &Path, hash: &[u8]) -> Result<Commit> {
     let content = object::cat_file(repo, hash)?;
-    Commit::try_from(str::from_utf8(&content)?)
+    Ok(Commit::try_from(str::from_utf8(&content)?)?)
 }
 
 /// Get hash of repository head if it exists.
@@ -86,8 +89,8 @@ fn get_head(repo: &Path) -> io::Result<Option<Vec<u8>>> {
 }
 
 /// Get log repository commits in most recent order.
-fn log(repo: &Path) -> Result<String> {
-    let hash = match get_head(repo)? {
+fn _log(repo: &Path) -> Result<String> {
+    let _hash = match get_head(repo)? {
         Some(hash) => hash,
         None => return Ok(String::new()),
     };
@@ -121,8 +124,6 @@ pub fn write_commit(repo: &Path, folder: &Path, message: &str) -> Result<Vec<u8>
 }
 
 mod tests {
-    use super::*;
-
     #[test]
     fn try_from_empty_message() {
         let content = "\
